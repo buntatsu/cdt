@@ -24,7 +24,7 @@ public class Token implements IToken, Cloneable {
 	private IToken fNextToken;
 	Object fSource;
 
-	Token(int kind, Object source, int offset, int endOffset) {
+	public Token(int kind, Object source, int offset, int endOffset) {
 		fKind= kind;
 		fOffset= offset;
 		fEndOffset= endOffset;

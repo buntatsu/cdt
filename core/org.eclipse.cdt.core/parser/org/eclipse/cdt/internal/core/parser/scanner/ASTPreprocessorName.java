@@ -7,7 +7,7 @@
  *
  * Contributors:
  *     Markus Schorn - initial API and implementation
- *******************************************************************************/ 
+ *******************************************************************************/
 package org.eclipse.cdt.internal.core.parser.scanner;
 
 import org.eclipse.cdt.core.dom.ILinkage;
@@ -30,7 +30,7 @@ import org.eclipse.core.runtime.IAdaptable;
  * Models IASTNames as needed for the preprocessor statements and macro expansions.
  * @since 5.0
  */
-class ASTPreprocessorName extends ASTPreprocessorNode implements IASTName {
+public class ASTPreprocessorName extends ASTPreprocessorNode implements IASTName {
 	private final char[] fName;
 	private final IBinding fBinding;
 
@@ -145,7 +145,7 @@ class ASTPreprocessorDefinition extends ASTPreprocessorName {
 	public boolean isDefinition() {
 		return true;
 	}
-	
+
 	@Override
 	public int getRoleOfName(boolean allowResolution) {
 		return IASTNameOwner.r_definition;
@@ -207,7 +207,7 @@ class ASTBuiltinName extends ASTPreprocessorDefinition implements IAdaptable {
 
 class ASTMacroReferenceName extends ASTPreprocessorName {
 	private ImageLocationInfo fImageLocationInfo;
-	
+
 	public ASTMacroReferenceName(IASTNode parent, ASTNodeProperty property,
 			int offset, int endOffset, IMacroBinding macro, ImageLocationInfo imgLocationInfo) {
 		super(parent, property, offset, endOffset, macro.getNameCharArray(), macro);
