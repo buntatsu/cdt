@@ -113,7 +113,7 @@ public class GNUCSourceParser extends AbstractGNUSourceCodeParser {
 
     private int fPreventKnrCheck= 0;
     
-    private final ICNodeFactory nodeFactory;
+    protected final ICNodeFactory nodeFactory;
 
     public GNUCSourceParser(IScanner scanner, ParserMode parserMode,
             IParserLogService logService, ICParserExtensionConfiguration config) {
@@ -468,7 +468,7 @@ public class GNUCSourceParser extends AbstractGNUSourceCodeParser {
     	return expression(ExprKind.eConstant);
     }
 
-    private IASTExpression expression(final ExprKind kind) throws EndOfFileException, BacktrackException {
+    protected IASTExpression expression(final ExprKind kind) throws EndOfFileException, BacktrackException {
     	final boolean allowComma= kind == ExprKind.eExpression;
     	boolean allowAssignment= kind != ExprKind.eConstant;
 		int lt1;
