@@ -394,7 +394,7 @@ public class AsmModelBuilder implements IContributedModelBuilder {
 		parent.addChild(macro);
 	}
 
-	private void parsePPInclude(CElement parent) throws CModelException, OffsetLimitReachedException {
+	protected void parsePPInclude(CElement parent) throws CModelException, OffsetLimitReachedException {
 		int startOffset= fLexer.currentToken().getOffset();
 		int nameStart= 0;
 		int nameEnd= 0;
