@@ -30,7 +30,7 @@ import org.eclipse.core.runtime.IAdaptable;
  * Models IASTNames as needed for the preprocessor statements and macro expansions.
  * @since 5.0
  */
-class ASTPreprocessorName extends ASTPreprocessorNode implements IASTName {
+public class ASTPreprocessorName extends ASTPreprocessorNode implements IASTName {
 	private final char[] fName;
 	private final IBinding fBinding;
 
