@@ -40,17 +40,17 @@ import org.eclipse.cdt.core.parser.util.CharArrayUtils;
  * The characters in string literals and char-literals are left as they are found, no conversion to
  * an execution character-set is performed.
  */
-final public class Lexer implements ITokenSequence {
+public class Lexer implements ITokenSequence {
 	public static final int tBEFORE_INPUT   = IToken.FIRST_RESERVED_SCANNER;
 	public static final int tNEWLINE		= IToken.FIRST_RESERVED_SCANNER + 1;
 	public static final int tQUOTE_HEADER_NAME    = IToken.FIRST_RESERVED_SCANNER + 2;
 	public static final int tSYSTEM_HEADER_NAME   = IToken.FIRST_RESERVED_SCANNER + 3;
 	public static final int tOTHER_CHARACTER 	  = IToken.FIRST_RESERVED_SCANNER + 4;
 	
-	private static final int END_OF_INPUT = -1;
-	private static final int ORIGIN_LEXER = OffsetLimitReachedException.ORIGIN_LEXER;
+	protected static final int END_OF_INPUT = -1;
+	protected static final int ORIGIN_LEXER = OffsetLimitReachedException.ORIGIN_LEXER;
 	
-	public final static class LexerOptions implements Cloneable {
+	public static class LexerOptions implements Cloneable {
 		public boolean fSupportDollarInIdentifiers= true;
 		public boolean fSupportAtSignInIdentifiers= true;
 		public boolean fSupportMinAndMax= true;
@@ -72,40 +72,40 @@ final public class Lexer implements ITokenSequence {
 	}
 
 	// configuration
-	private final LexerOptions fOptions;
-	private boolean fSupportContentAssist= false;
-	private final ILexerLog fLog;
-	private final Object fSource;
+	protected final LexerOptions fOptions;
+	protected boolean fSupportContentAssist= false;
+	protected final ILexerLog fLog;
+	protected final Object fSource;
 	
 	// the input to the lexer
-	private final AbstractCharArray fInput;
-	private final int fStart;
-	private int fLimit;
+	protected final AbstractCharArray fInput;
+	protected final int fStart;
+	protected int fLimit;
 
 	// after phase 3 (newline, trigraph, line-splice)
-	private int fOffset;
-	private int fEndOffset;
-	private int fCharPhase3;
+	protected int fOffset;
+	protected int fEndOffset;
+	protected int fCharPhase3;
 	
-	private boolean fInsideIncludeDirective= false;
-	private Token fToken;
-	private Token fLastToken;
+	protected boolean fInsideIncludeDirective= false;
+	protected Token fToken;
+	protected Token fLastToken;
 	
 	// For the few cases where we have to lookahead more than one character
-	private int fMarkPhase3Offset;
-	private int fMarkPhase3EndOffset;
-	private int fMarkPhase3PrefetchedChar;
+	protected int fMarkPhase3Offset;
+	protected int fMarkPhase3EndOffset;
+	protected int fMarkPhase3PrefetchedChar;
 	
 	// To store the entire state. Note that we don't reuse the variables
 	// used for saving the phase3 because calls to markPhase3() and
 	// restorePhase3() can occur in between calls to saveState() and
 	// restoreState().
-	private int fMarkOffset;
-	private int fMarkEndOffset;
-	private int fMarkPrefetchedChar;
-	private boolean fMarkInsideIncludeDirective;
-	private Token fMarkToken;
-	private Token fMarkLastToken;
+	protected int fMarkOffset;
+	protected int fMarkEndOffset;
+	protected int fMarkPrefetchedChar;
+	protected boolean fMarkInsideIncludeDirective;
+	protected Token fMarkToken;
+	protected Token fMarkLastToken;
 	
 	public Lexer(char[] input, LexerOptions options, ILexerLog log, Object source) {
 		this(new CharArray(input), 0, input.length, options, log, source);
@@ -126,7 +126,7 @@ final public class Lexer implements ITokenSequence {
 		nextCharPhase3();
 	}
 	
-	private boolean isValidOffset(int pos) {
+	protected boolean isValidOffset(int pos) {
 		if (fLimit < 0)
 			return fInput.isValidOffset(pos);
 		
@@ -203,7 +203,7 @@ final public class Lexer implements ITokenSequence {
 	 * @param origin parameter for the {@link OffsetLimitReachedException} when it has to be thrown.
 	 * @since 5.0
 	 */
-	public final int consumeLine(int origin) throws OffsetLimitReachedException {
+	public int consumeLine(int origin) throws OffsetLimitReachedException {
 		Token t= fToken;
 		Token lt= null;
 		while (true) {
@@ -259,7 +259,7 @@ final public class Lexer implements ITokenSequence {
 	/**
 	 * Computes the next token.
 	 */
-	private Token fetchToken() throws OffsetLimitReachedException {
+	protected Token fetchToken() throws OffsetLimitReachedException {
 		while (true) {
 			final int start= fOffset;
 			final int c= fCharPhase3;
@@ -649,15 +649,15 @@ final public class Lexer implements ITokenSequence {
 		}
     }
 
-	private Token newToken(int kind, int offset) {
+	protected Token newToken(int kind, int offset) {
     	return new Token(kind, fSource, offset, fOffset);
     }
 
-	private Token newDigraphToken(int kind, int offset) {
+	protected Token newDigraphToken(int kind, int offset) {
     	return new TokenForDigraph(kind, fSource, offset, fOffset);
     }
 
-    private Token newToken(final int kind, final int offset, final int imageLength) {
+    protected Token newToken(final int kind, final int offset, final int imageLength) {
     	final int endOffset= fOffset;
     	final int sourceLen= endOffset - offset;
     	char[] image;
@@ -671,11 +671,11 @@ final public class Lexer implements ITokenSequence {
     	return new TokenWithImage(kind, fSource, offset, endOffset, image);
     }
 
-    private void handleProblem(int problemID, char[] arg, int offset) {
+    protected void handleProblem(int problemID, char[] arg, int offset) {
     	fLog.handleProblem(problemID, arg, offset, fOffset);
     }
 
-	private Token headerName(final int start, final boolean expectQuotes) throws OffsetLimitReachedException {
+	protected Token headerName(final int start, final boolean expectQuotes) throws OffsetLimitReachedException {
     	int length= 1;
 		boolean done = false;
 		int c= fCharPhase3;
@@ -704,7 +704,7 @@ final public class Lexer implements ITokenSequence {
 		return newToken((expectQuotes ? tQUOTE_HEADER_NAME : tSYSTEM_HEADER_NAME), start, length);
 	}
 
-	private void blockComment(final int start, final char trigger) {
+	protected void blockComment(final int start, final char trigger) {
 		// We can ignore line-splices, trigraphs and windows newlines when searching for the '*'
 		int pos= fEndOffset;
 		while (isValidOffset(pos)) {
@@ -722,7 +722,7 @@ final public class Lexer implements ITokenSequence {
 		fLog.handleComment(true, start, pos, fInput);
 	}
 
-	private void lineComment(final int start) {
+	protected void lineComment(final int start) {
 		int c= fCharPhase3;
 		while (true) {
 			switch (c) {
@@ -735,7 +735,7 @@ final public class Lexer implements ITokenSequence {
 		}
 	}
 	
-	private boolean isIdentifierStart(int c) {
+	protected boolean isIdentifierStart(int c) {
 		return Character.isLetter((char)c) || 
 				Character.isDigit((char)c) || 
 				Character.isUnicodeIdentifierPart(c) ||
@@ -744,7 +744,7 @@ final public class Lexer implements ITokenSequence {
 				c == '_';
 	}
 	
-	private Token stringLiteral(final int start, int length, int tokenType) throws OffsetLimitReachedException {
+	protected Token stringLiteral(final int start, int length, int tokenType) throws OffsetLimitReachedException {
 		boolean escaped = false;
 		boolean done = false;
 		
@@ -787,7 +787,7 @@ final public class Lexer implements ITokenSequence {
 		return newToken(tokenType, start, length);
 	}
 
-	private boolean isUDLSuffixStart(int c) {
+	protected boolean isUDLSuffixStart(int c) {
 		// C++11 introduced a backward incompatible change breaking the following code:
 		// #define __STDC_FORMAT_MACROS
 		// #include <inttypes.h>
@@ -805,7 +805,7 @@ final public class Lexer implements ITokenSequence {
 		return c == '_';
 	}
 
-	private Token rawStringLiteral(final int start, int length, int tokenType) throws OffsetLimitReachedException {
+	protected Token rawStringLiteral(final int start, int length, int tokenType) throws OffsetLimitReachedException {
 		final int delimOffset= fOffset;
 		int delimEndOffset = delimOffset;
 		int offset;
@@ -859,7 +859,7 @@ final public class Lexer implements ITokenSequence {
 		return newToken(tokenType, start, offset - start);
 	}
 
-	private Token charLiteral(final int start, int tokenType) throws OffsetLimitReachedException {
+	protected Token charLiteral(final int start, int tokenType) throws OffsetLimitReachedException {
 		boolean escaped = false;
 		boolean done = false;
 		int length= tokenType == IToken.tCHAR ? 1 : 2;
@@ -901,7 +901,7 @@ final public class Lexer implements ITokenSequence {
 		return newToken(tokenType, start, length);
 	}
 	
-	private Token identifier(int start, int length) {
+	protected Token identifier(int start, int length) {
 		int tokenKind= IToken.tIDENTIFIER;
     	boolean isPartOfIdentifier= true;
     	int c= fCharPhase3;
@@ -970,7 +970,7 @@ final public class Lexer implements ITokenSequence {
         return newToken(tokenKind, start, length);
 	}
 	
-	private Token number(final int start, int length, boolean isFloat) throws OffsetLimitReachedException {
+	protected Token number(final int start, int length, boolean isFloat) throws OffsetLimitReachedException {
 		boolean isPartOfNumber= true;
 		boolean isHex= false;
 		int c= fCharPhase3;
@@ -1062,7 +1062,7 @@ final public class Lexer implements ITokenSequence {
 	 * Saves the current state of phase3, necessary for '...', '%:%:', UNCs and string literals
 	 * with a long prefix.
 	 */
-	private void markPhase3() {
+	protected void markPhase3() {
 		fMarkPhase3Offset= fOffset;
 		fMarkPhase3EndOffset= fEndOffset;
 		fMarkPhase3PrefetchedChar= fCharPhase3;
@@ -1071,7 +1071,7 @@ final public class Lexer implements ITokenSequence {
 	/**
 	 * Restores a previously saved state of phase3.
 	 */
-	private void restorePhase3() {
+	protected void restorePhase3() {
 		fOffset= fMarkPhase3Offset;
 		fEndOffset= fMarkPhase3EndOffset;
 		fCharPhase3= fMarkPhase3PrefetchedChar;
@@ -1081,7 +1081,7 @@ final public class Lexer implements ITokenSequence {
 	 * Perform phase 1-3: Replace \r\n with \n, handle trigraphs, detect line-splicing.
 	 * Changes fOffset, fEndOffset and fCharPhase3, state-less otherwise.
 	 */
-	private int nextCharPhase3() {
+	protected int nextCharPhase3() {
 		int pos= fEndOffset;
 		do {
 			if (!isValidOffset(pos + 1)) {
@@ -1152,7 +1152,7 @@ final public class Lexer implements ITokenSequence {
 	 * @param c trigraph without leading question marks.
 	 * @return the character encoded or 0.
 	 */
-	private char checkTrigraph(char c) {
+	protected char checkTrigraph(char c) {
 		switch (c) {
 		case '=': return '#';
 		case '\'':return '^';
@@ -1170,7 +1170,7 @@ final public class Lexer implements ITokenSequence {
 	/**
 	 * Returns the end-offset for a line-splice sequence, or -1 if there is none.
 	 */
-	private int findEndOfLineSpliceSequence(int pos) {
+	protected int findEndOfLineSpliceSequence(int pos) {
 		boolean haveBackslash= true;
 		int result= -1;
 		loop: while (isValidOffset(pos)) {
@@ -1229,7 +1229,7 @@ final public class Lexer implements ITokenSequence {
 	/**
 	 * Returns the image with trigraphs replaced and line-splices removed.
 	 */
-	private char[] getCharImage(int offset, int endOffset, int imageLength) {
+	protected char[] getCharImage(int offset, int endOffset, int imageLength) {
 		final char[] result= new char[imageLength];
 		markPhase3();
 		fEndOffset= offset;
