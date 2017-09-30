@@ -23,11 +23,11 @@ import org.eclipse.cdt.core.parser.util.CharArraySet;
  * Represents part of the input to the preprocessor. This may be a file or the result of a macro expansion.
  * @since 5.0
  */
-final class ScannerContext {
-	enum BranchKind { eIf, eElif, eElse, eEnd }
-	enum CodeState { eActive, eParseInactive, eSkipInactive }
+public class ScannerContext {
+	public enum BranchKind { eIf, eElif, eElse, eEnd }
+	public enum CodeState { eActive, eParseInactive, eSkipInactive }
 
-	final static class Conditional {
+	public final static class Conditional {
 		private final CodeState fInitialState;
 		private BranchKind fLast;
 		private boolean fTakeElse= true;
@@ -46,20 +46,20 @@ final class ScannerContext {
 		}
 	}
 	
-	private CodeState fInactiveState= CodeState.eSkipInactive;
-	private final int fDepth;
-	private final ILocationCtx fLocationCtx;
-	private final ScannerContext fParent;
-	private final Lexer fLexer;
-	private Token fTokens;
-	private ArrayList<Conditional> fConditionals;
-	private CodeState fCurrentState= CodeState.eActive;
-	private IncludeSearchPathElement fFoundOnPath;
-	private String fFoundViaDirective;
-	private CharArraySet fInternalModifications;
-	private CharArrayObjectMap<char[]> fSignificantMacros;
-	private boolean fPragmaOnce;
-	private int fLoadedVersionCount;
+	protected CodeState fInactiveState= CodeState.eSkipInactive;
+	protected final int fDepth;
+	protected final ILocationCtx fLocationCtx;
+	protected final ScannerContext fParent;
+	protected final Lexer fLexer;
+	protected Token fTokens;
+	protected ArrayList<Conditional> fConditionals;
+	protected CodeState fCurrentState= CodeState.eActive;
+	protected IncludeSearchPathElement fFoundOnPath;
+	protected String fFoundViaDirective;
+	protected CharArraySet fInternalModifications;
+	protected CharArrayObjectMap<char[]> fSignificantMacros;
+	protected boolean fPragmaOnce;
+	protected int fLoadedVersionCount;
 
 	/**
 	 * @param ctx 
@@ -151,7 +151,7 @@ final class ScannerContext {
 		return result;
 	}
 
-	private void changeState(CodeState state, BranchKind kind, boolean withinExpansion, int offset) {
+	protected void changeState(CodeState state, BranchKind kind, boolean withinExpansion, int offset) {
 		if (!withinExpansion) {
 			switch (state) {
 			case eActive:
@@ -179,19 +179,19 @@ final class ScannerContext {
 		fCurrentState= state;
 	}
 
-	private void startInactive(int offset, BranchKind kind) {
+	protected void startInactive(int offset, BranchKind kind) {
 		final int nesting = getCodeBranchNesting();
 		final int oldNesting = getOldNestingLevel(kind, nesting);
 		fTokens= new InactiveCodeToken(IToken.tINACTIVE_CODE_START, oldNesting, nesting, offset);
 	}
 
-	private void separateInactive(int offset, BranchKind kind) {
+	protected void separateInactive(int offset, BranchKind kind) {
 		final int nesting = getCodeBranchNesting();
 		final int oldNesting = getOldNestingLevel(kind, nesting);
 		fTokens= new InactiveCodeToken(IToken.tINACTIVE_CODE_SEPARATOR, oldNesting, nesting, offset);
 	}
 
-	private int getOldNestingLevel(BranchKind kind, int nesting) {
+	protected int getOldNestingLevel(BranchKind kind, int nesting) {
 		switch (kind) {
 		case eIf:
 			return nesting - 1;
@@ -204,7 +204,7 @@ final class ScannerContext {
 		return nesting;
 	}
 
-	private void stopInactive(int offset, BranchKind kind) {
+	protected void stopInactive(int offset, BranchKind kind) {
 		final int nesting = getCodeBranchNesting();
 		final int oldNesting = getOldNestingLevel(kind, nesting);
 		fTokens= new InactiveCodeToken(IToken.tINACTIVE_CODE_END, oldNesting, nesting, offset);
@@ -334,7 +334,7 @@ final class ScannerContext {
 			collector.put(macroName);
 	}
 	
-	private CharArraySet findModificationCollector() {
+	protected CharArraySet findModificationCollector() {
 		ScannerContext ctx= this;
 		do {
 			final CharArraySet collector = ctx.fInternalModifications;
@@ -366,7 +366,7 @@ final class ScannerContext {
 		}
 	}
 
-	private void addSignificantMacroDefined(char[] macroName) {
+	protected void addSignificantMacroDefined(char[] macroName) {
 		char[] old= addSignificantMacro(macroName, SignificantMacros.DEFINED);
 		if (old != null && old != SignificantMacros.DEFINED) {
 			// Put back more detailed condition
@@ -447,7 +447,7 @@ final class ScannerContext {
 		});
 	}
 	
-	private char[] addSignificantMacro(char[] macro, char[] value) {
+	protected char[] addSignificantMacro(char[] macro, char[] value) {
 		if (CPreprocessor.isPreprocessorProvidedMacro(macro))
 			return null;
 		return fSignificantMacros.put(macro, value);

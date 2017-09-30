@@ -29,9 +29,9 @@ public class Token implements IToken, Cloneable {
 	private IToken fNextToken;
 	Object fSource;
 
-	private static final Counter tokenCounter = new Counter();
+	protected static final Counter tokenCounter = new Counter();
 
-	Token(int kind, Object source, int offset, int endOffset) {
+	public Token(int kind, Object source, int offset, int endOffset) {
 		tokenCounter.inc();
 		fKind= kind;
 		fOffset= offset;

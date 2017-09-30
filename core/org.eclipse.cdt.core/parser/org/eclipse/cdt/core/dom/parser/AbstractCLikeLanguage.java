@@ -59,15 +59,15 @@ import org.eclipse.core.runtime.CoreException;
  * @since 5.0
  */
 public abstract class AbstractCLikeLanguage extends AbstractLanguage implements ICLanguageKeywords {
-	private static final AbstractScannerExtensionConfiguration DUMMY_SCANNER_EXTENSION_CONFIGURATION =
-			new AbstractScannerExtensionConfiguration() {};
+	protected static final AbstractScannerExtensionConfiguration DUMMY_SCANNER_EXTENSION_CONFIGURATION =
+			new AbstractScannerExtensionConfiguration() {};    //FIXME buntatsu private->protected
 
 	static class NameCollector extends ASTVisitor {
 		{
 			shouldVisitNames= true;
 		}
 
-		private List<IASTName> nameList= new ArrayList<IASTName>();
+		protected List<IASTName> nameList= new ArrayList<IASTName>();   //FIXME buntatsu private->protected
 
 		@Override
 		public int visit(IASTName name) {
@@ -245,7 +245,7 @@ public abstract class AbstractCLikeLanguage extends AbstractLanguage implements 
 		return createParser(scanner, mode, log, index, options, settings);
 	}
 	
-	private ParserMode createParserMode(boolean forCompletion, int options) {
+	protected ParserMode createParserMode(boolean forCompletion, int options) {  //FIXME buntatsu private->protected
 		if (forCompletion) {
 			return ParserMode.COMPLETION_PARSE;
 		} else if ((options & OPTION_SKIP_FUNCTION_BODIES) != 0) {
@@ -300,9 +300,9 @@ public abstract class AbstractCLikeLanguage extends AbstractLanguage implements 
 		return null;
 	}
 
-	private ICLanguageKeywords cLanguageKeywords;
+	protected ICLanguageKeywords cLanguageKeywords;  //FIXME buntatsu private->protected
 
-	private synchronized ICLanguageKeywords getCLanguageKeywords() {
+	protected synchronized ICLanguageKeywords getCLanguageKeywords() {  //FIXME buntatsu private->protected
 		if (cLanguageKeywords == null) {
 			cLanguageKeywords = new CLanguageKeywords(getParserLanguage(),
 					getScannerExtensionConfiguration(new ExtendedScannerInfo()));
