@@ -23,6 +23,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IConsoleView;
@@ -127,7 +128,10 @@ public class GdbBasicCliConsole extends IOConsole implements IGDBDebuggerConsole
 		int bufferLines = store.getInt(IGdbDebugPreferenceConstants.PREF_CONSOLE_BUFFERLINES);
 
 		Display.getDefault().asyncExec(() -> {
-			getInputStream().setColor(Display.getDefault().getSystemColor(SWT.COLOR_GREEN));
+			IOConsoleInputStream inputStream = getInputStream();
+			if (inputStream != null) {
+				inputStream.setColor(Display.getDefault().getSystemColor(SWT.COLOR_GREEN));
+			}
         	fErrorStream.setColor(Display.getDefault().getSystemColor(SWT.COLOR_RED));
 
     		setInvertedColors(enabled);
@@ -145,7 +149,14 @@ public class GdbBasicCliConsole extends IOConsole implements IGDBDebuggerConsole
     	String newName = computeName();
     	String name = getName();
     	if (!name.equals(newName)) {
-    		PlatformUI.getWorkbench().getDisplay().asyncExec(() -> setName(newName));
+    		try {
+	    		PlatformUI.getWorkbench().getDisplay().asyncExec(() -> setName(newName));
+			} catch (SWTException e) {
+				// display may be disposed, so ignore the exception
+				if (e.code != SWT.ERROR_WIDGET_DISPOSED) {
+					throw e;
+				}
+			}
     	}
     }
 	
@@ -227,10 +238,15 @@ public class GdbBasicCliConsole extends IOConsole implements IGDBDebuggerConsole
                 byte[] b = new byte[1024];
                 int read = 0;
                 do {
-                	read = getInputStream().read(b);
+                	IOConsoleInputStream inputStream = getInputStream();
+                	if (inputStream == null) {
+                		break;
+                	}
+                	read = inputStream.read(b);
                 	if (read > 0) {
                 		fProcess.getOutputStream().write(b, 0, read);
                 	}
+            
                 } while (read >= 0);
             } catch (IOException e) {
             }
